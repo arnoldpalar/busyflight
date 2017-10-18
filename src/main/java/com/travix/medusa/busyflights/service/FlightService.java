@@ -26,6 +26,9 @@ public class FlightService {
     @Value("${busyflight.supplier.timeout}")
     private Integer supplierTimeout;
 
+    @Value("${busyflight.supplier.max-executor}")
+    private Integer maxExecutor;
+
     @Autowired
     public FlightService(List<? extends FlightSupplierService<? extends SupplierRequest, ? extends SupplierResponse>> supplierServices) {
         this.supplierServices = supplierServices;
@@ -34,6 +37,7 @@ public class FlightService {
     public Stream<BusyFlightsResponse> search(BusyFlightsRequest flightRequest) throws Exception {
         Assert.notNull(flightRequest, "Empty request");
 
+        ExecutorService executor = Executors.newFixedThreadPool(Math.min(supplierServices.size(), maxExecutor));
         List<CompletableFuture<Stream<BusyFlightsResponse>>> futures =
             supplierServices.stream()
                             .map(ss -> CompletableFuture.supplyAsync(() -> {
@@ -43,7 +47,7 @@ public class FlightService {
                                     LOG.log(Level.SEVERE, e.getMessage(), e);
                                     return (Stream<BusyFlightsResponse>) null;
                                 }
-                            })).collect(Collectors.toList());
+                            }, executor)).collect(Collectors.toList());
 
 
         Stream.Builder<BusyFlightsResponse> result = Stream.builder();
