@@ -9,13 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,7 +40,7 @@ public class FlightService {
                                 try {
                                     return ss.search(flightRequest);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    LOG.log(Level.SEVERE, e.getMessage(), e);
                                     return (Stream<BusyFlightsResponse>) null;
                                 }
                             })).collect(Collectors.toList());
