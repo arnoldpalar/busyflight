@@ -7,10 +7,13 @@ import com.travix.medusa.busyflights.domain.crazyair.CrazyAirResponse;
 import com.travix.medusa.busyflights.domain.toughjet.ToughJetRequest;
 import com.travix.medusa.busyflights.domain.toughjet.ToughJetResponse;
 import com.travix.medusa.busyflights.service.FlightSupplierService;
+import com.travix.medusa.busyflights.service.supplier.CrazyAirService;
+import com.travix.medusa.busyflights.service.supplier.ToughJetService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.MediaType;
@@ -26,11 +29,15 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RestClientTest(FlightSupplierService.class)
 public class FlightSupplierServiceTest {
 
+    @Qualifier("objectMapper")
     @Autowired
     private ObjectMapper mapper;
 
     @Autowired
-    private FlightSupplierService flightSupplierService;
+    private CrazyAirService crazyAirService;
+
+    @Autowired
+    private ToughJetService toughJetService;
 
     @Autowired
     private MockRestServiceServer server;
@@ -56,10 +63,9 @@ public class FlightSupplierServiceTest {
         server.expect(requestTo(ROOT_URL_CRAZYAIR + "/flight/search"))
             .andRespond(withSuccess(mapper.writeValueAsString(crazyAirResponse), MediaType.APPLICATION_JSON));
 
-        SupplierResponse supplierResponse = flightSupplierService.search(new CrazyAirRequest()).findAny().orElse(null);
+        SupplierResponse supplierResponse = crazyAirService.supplierSearch(new CrazyAirRequest()).findAny().orElse(null);
 
         Assert.assertNotNull(supplierResponse);
-        Assert.assertTrue(supplierResponse instanceof CrazyAirResponse);
         Assert.assertEquals(crazyAirResponse.getAirline(), ((CrazyAirResponse)supplierResponse).getAirline());
     }
 
@@ -79,10 +85,9 @@ public class FlightSupplierServiceTest {
         server.expect(requestTo(ROOT_URL_CRAZYAIR + "/flight/search"))
                 .andRespond(withSuccess(mapper.writeValueAsString(toughJetResponse), MediaType.APPLICATION_JSON));
 
-        SupplierResponse supplierResponse = flightSupplierService.search(new ToughJetRequest()).findAny().orElse(null);
+        SupplierResponse supplierResponse = toughJetService.supplierSearch(new ToughJetRequest()).findAny().orElse(null);
 
         Assert.assertNotNull(supplierResponse);
-        Assert.assertTrue(supplierResponse instanceof ToughJetResponse);
         Assert.assertEquals(toughJetResponse.getCarrier(), ((ToughJetResponse)supplierResponse).getCarrier());
     }
 }
